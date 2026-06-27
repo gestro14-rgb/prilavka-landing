@@ -13,7 +13,7 @@
   html { scroll-behavior: auto; }
 
   body {
-    height: 3000vh;
+    height: 1500vh;
     background: #000;
     overflow-x: hidden;
   }
@@ -54,6 +54,12 @@
 
   /* ── Video ── */
   #bg-video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    z-index: 0;
     display: block;
   }
 
@@ -286,12 +292,11 @@
 <body>
 
 <video id="bg-video"
-  src="https://res.cloudinary.com/dbyku9vy0/video/upload/v1782517355/tay3wrmwd7okrdef83wh.mp4"
-  poster="https://res.cloudinary.com/dbyku9vy0/video/upload/so_0/v1782517355/tay3wrmwd7okrdef83wh.jpg"
+  src="https://res.cloudinary.com/dbyku9vy0/video/upload/v1782582226/gpatks03ews9fcg0mvuh.mp4"
+  poster="https://res.cloudinary.com/dbyku9vy0/video/upload/so_0/v1782582226/gpatks03ews9fcg0mvuh.jpg"
   preload="auto"
   muted
-  playsinline
-  style="position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0;">
+  playsinline>
 </video>
 
 <div id="overlay"></div>
@@ -412,7 +417,7 @@ const video = document.getElementById('bg-video');
 const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
-const DURATION = 60.83;
+const DURATION = 64.3;
 // Слои в единицах прогресса (0..1), затем переводим в секунды × DURATION
 // l1: 0–0.04 | мёртвая зона 0.04–0.06 | l2–l8: по 0.10 с зазором 0.02 | l9: 0.90–1.0
 const P = DURATION;
