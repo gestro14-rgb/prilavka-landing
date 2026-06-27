@@ -397,37 +397,40 @@ const video = document.getElementById('bg-video');
 const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
-const FADE = 1.1;
-const LAYERS = [
-  { el: document.getElementById('l1'), s: 0,  e: 4  },
-  { el: document.getElementById('l2'), s: 6,  e: 11 },
-  { el: document.getElementById('l3'), s: 13, e: 18 },
-  { el: document.getElementById('l4'), s: 19, e: 24 },
-  { el: document.getElementById('l5'), s: 25, e: 30 },
-  { el: document.getElementById('l6'), s: 31, e: 36 },
-  { el: document.getElementById('l7'), s: 37, e: 42 },
-  { el: document.getElementById('l8'), s: 43, e: 47 },
-  { el: document.getElementById('l9'), s: 48, e: 50 }
-];
-const layerIn = LAYERS.map(() => false);
+const DURATION = 60.83;
+const FADE_T   = 0.5; // секунд на fade-in / fade-out
 
-function layerOpacity(layer, pct) {
-  if (pct < layer.s - FADE || pct > layer.e + FADE) return 0;
-  if (pct >= layer.s && pct <= layer.e) return 1;
-  if (pct < layer.s) return Math.max(0, (pct - (layer.s - FADE)) / FADE);
-  return Math.max(0, 1 - (pct - layer.e) / FADE);
+// Сцены привязаны к времени видео
+const SCENES = [
+  { el: document.getElementById('l1'), start: 0,    end: 3      }, // лого + кнопка
+  { el: document.getElementById('l2'), start: 0,    end: 8      }, // Тамбовская земля
+  { el: document.getElementById('l3'), start: 8,    end: 16     }, // Всё начинается здесь
+  { el: document.getElementById('l4'), start: 16,   end: 24     }, // Руки, которые знают дело
+  { el: document.getElementById('l5'), start: 24,   end: 32     }, // В путь до рассвета
+  { el: document.getElementById('l6'), start: 32,   end: 40     }, // Только лучшее
+  { el: document.getElementById('l7'), start: 40,   end: 48     }, // С заботой упаковано
+  { el: document.getElementById('l8'), start: 48,   end: 56     }, // Уже у твоей двери
+  { el: document.getElementById('l9'), start: 58,   end: DURATION } // финальный CTA
+];
+const layerIn = SCENES.map(() => false);
+
+function sceneOpacity(scene, t) {
+  if (t < scene.start - FADE_T || t > scene.end + FADE_T) return 0;
+  if (t >= scene.start && t <= scene.end) return 1;
+  if (t < scene.start) return Math.max(0, (t - (scene.start - FADE_T)) / FADE_T);
+  return Math.max(0, 1 - (t - scene.end) / FADE_T);
 }
 
-function updateLayers(pct) {
-  LAYERS.forEach((layer, i) => {
-    const op   = layerOpacity(layer, pct);
+function updateLayers(t) {
+  SCENES.forEach((scene, i) => {
+    const op   = sceneOpacity(scene, t);
     const isIn = op > 0.05;
-    layer.el.style.opacity       = op;
-    layer.el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
-    if (isIn && !layerIn[i])  { layer.el.classList.add('in');    layerIn[i] = true;  }
-    if (!isIn && layerIn[i])  { layer.el.classList.remove('in'); layerIn[i] = false; }
+    scene.el.style.opacity       = op;
+    scene.el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
+    if (isIn && !layerIn[i])  { scene.el.classList.add('in');    layerIn[i] = true;  }
+    if (!isIn && layerIn[i])  { scene.el.classList.remove('in'); layerIn[i] = false; }
   });
-  hint.style.opacity = pct < 3 ? '1' : '0';
+  hint.style.opacity = t < 1.5 ? '1' : '0';
 }
 
 // ── Video scroll sync ─────────────────────────────────────────────────
@@ -435,13 +438,13 @@ const totalScroll = () => document.body.scrollHeight - window.innerHeight;
 
 function onScroll() {
   const progress = window.scrollY / totalScroll();
-  const pct = progress * 100;
+  const t = progress * DURATION; // текущее время видео
 
   if (video.duration) {
-    video.currentTime = progress * video.duration;
+    video.currentTime = t;
   }
 
-  updateLayers(pct);
+  updateLayers(t);
 }
 
 window.addEventListener('scroll', onScroll, { passive: true });
