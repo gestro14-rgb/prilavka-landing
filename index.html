@@ -85,12 +85,6 @@
     max-width: 900px;
   }
 
-  /* #l1 — header at top, button pinned to bottom */
-  #l1 {
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 60px;
-  }
 
   /* ── Logo ── */
   .logo-row {
@@ -302,20 +296,19 @@
 
 <div id="overlay"></div>
 
-<!-- Layer 1 · 0–8% -->
+<!-- Layer 1 · 0–4% -->
 <div class="layer" id="l1">
-  <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;">
-    <img src="https://prilavka-app-production.up.railway.app/logo-icon-transparent.svg"
-         alt="Прилавка"
-         style="width:72px;height:72px;">
-    <span style="font-family:'Raleway',sans-serif;font-size:48px;font-weight:900;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">Прилавка</span>
+  <div class="layer-inner">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px;">
+      <img src="https://prilavka-app-production.up.railway.app/logo-icon-transparent.svg"
+           alt="Прилавка"
+           style="width:72px;height:72px;">
+      <span style="font-family:'Raleway',sans-serif;font-size:48px;font-weight:900;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">Прилавка</span>
+    </div>
+    <p class="sub-hero">Эко-продукты. С заботой.</p>
+    <a href="https://t.me/prilavka_eco_bot" class="btn-ghost" target="_blank" rel="noopener"
+       style="margin-top:34px;">Открыть в Telegram</a>
   </div>
-  <p class="sub-hero" style="margin-top:0;">Эко-продукты. С заботой.</p>
-  <a href="https://t.me/prilavka_eco_bot" class="btn-ghost"
-     target="_blank" rel="noopener"
-     style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);white-space:nowrap;">
-    Открыть в Telegram
-  </a>
 </div>
 
 <!-- Layer 2 · 12–22% -->
@@ -420,21 +413,19 @@ const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
 const DURATION = 60.83;
-// Мёртвая зона = 0.01 × DURATION с каждой стороны границы (итого 0.02 от progress)
-const DEAD = 0.01 * DURATION; // ~0.61 сек
-
-// Границы видео-сцен (каждая 7.6 сек); l1 — герой 0–4 сек
-// Каждая сцена активна от (граница + DEAD) до (следующая граница - DEAD)
+// Слои в единицах прогресса (0..1), затем переводим в секунды × DURATION
+// l1: 0–0.04 | мёртвая зона 0.04–0.06 | l2–l8: по 0.10 с зазором 0.02 | l9: 0.90–1.0
+const P = DURATION;
 const SCENES = [
-  { el: document.getElementById('l1'), s: 0,                    e: 0.08 * DURATION }, // 0–8% progress
-  { el: document.getElementById('l2'), s: 0.10 * DURATION,      e: 7.6 - DEAD      }, // 10% → конец сцены 1
-  { el: document.getElementById('l3'), s: 7.6 + DEAD,  e: 15.2 - DEAD   },
-  { el: document.getElementById('l4'), s: 15.2 + DEAD, e: 22.8 - DEAD   },
-  { el: document.getElementById('l5'), s: 22.8 + DEAD, e: 30.4 - DEAD   },
-  { el: document.getElementById('l6'), s: 30.4 + DEAD, e: 38 - DEAD     },
-  { el: document.getElementById('l7'), s: 38 + DEAD,   e: 45.6 - DEAD   },
-  { el: document.getElementById('l8'), s: 45.6 + DEAD, e: 53.2 - DEAD   },
-  { el: document.getElementById('l9'), s: 53.2 + DEAD, e: DURATION       },
+  { el: document.getElementById('l1'), s: 0,        e: 0.04 * P },
+  { el: document.getElementById('l2'), s: 0.06 * P, e: 0.16 * P },
+  { el: document.getElementById('l3'), s: 0.18 * P, e: 0.28 * P },
+  { el: document.getElementById('l4'), s: 0.30 * P, e: 0.40 * P },
+  { el: document.getElementById('l5'), s: 0.42 * P, e: 0.52 * P },
+  { el: document.getElementById('l6'), s: 0.54 * P, e: 0.64 * P },
+  { el: document.getElementById('l7'), s: 0.66 * P, e: 0.76 * P },
+  { el: document.getElementById('l8'), s: 0.78 * P, e: 0.88 * P },
+  { el: document.getElementById('l9'), s: 0.90 * P, e: P         },
 ];
 
 function updateLayers(t) {
