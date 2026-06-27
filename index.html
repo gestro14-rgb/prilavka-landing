@@ -71,6 +71,7 @@
     position: fixed;
     inset: 0;
     z-index: 10;
+    transition: opacity 0.5s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -420,47 +421,43 @@ const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
 const DURATION = 60.83;
-const FADE_T   = 0.5; // секунд на fade-in / fade-out
+// Мёртвая зона = 0.01 × DURATION с каждой стороны границы (итого 0.02 от progress)
+const DEAD = 0.01 * DURATION; // ~0.61 сек
 
-// Сцены привязаны к времени видео (8 сцен × 7.6 сек)
+// Границы видео-сцен (каждая 7.6 сек); l1 — герой 0–4 сек
+// Каждая сцена активна от (граница + DEAD) до (следующая граница - DEAD)
 const SCENES = [
-  { el: document.getElementById('l1'), start: 0,    end: 4      }, // лого + кнопка
-  { el: document.getElementById('l2'), start: 0,    end: 7.6    }, // Тамбовская земля
-  { el: document.getElementById('l3'), start: 7.6,  end: 15.2   }, // Всё начинается здесь
-  { el: document.getElementById('l4'), start: 15.2, end: 22.8   }, // Руки, которые знают дело
-  { el: document.getElementById('l5'), start: 22.8, end: 30.4   }, // В путь до рассвета
-  { el: document.getElementById('l6'), start: 30.4, end: 38     }, // Только лучшее
-  { el: document.getElementById('l7'), start: 38,   end: 45.6   }, // С заботой упаковано
-  { el: document.getElementById('l8'), start: 45.6, end: 53.2   }, // Уже у твоей двери
-  { el: document.getElementById('l9'), start: 53.2, end: DURATION } // финальный CTA
+  { el: document.getElementById('l1'), s: 0,           e: 4 - DEAD      },
+  { el: document.getElementById('l2'), s: 4 + DEAD,    e: 7.6 - DEAD    },
+  { el: document.getElementById('l3'), s: 7.6 + DEAD,  e: 15.2 - DEAD   },
+  { el: document.getElementById('l4'), s: 15.2 + DEAD, e: 22.8 - DEAD   },
+  { el: document.getElementById('l5'), s: 22.8 + DEAD, e: 30.4 - DEAD   },
+  { el: document.getElementById('l6'), s: 30.4 + DEAD, e: 38 - DEAD     },
+  { el: document.getElementById('l7'), s: 38 + DEAD,   e: 45.6 - DEAD   },
+  { el: document.getElementById('l8'), s: 45.6 + DEAD, e: 53.2 - DEAD   },
+  { el: document.getElementById('l9'), s: 53.2 + DEAD, e: DURATION       },
 ];
-const layerIn = SCENES.map(() => false);
-
-function sceneOpacity(scene, t) {
-  if (t < scene.start - FADE_T || t > scene.end + FADE_T) return 0;
-  if (t >= scene.start && t <= scene.end) return 1;
-  if (t < scene.start) return Math.max(0, (t - (scene.start - FADE_T)) / FADE_T);
-  return Math.max(0, 1 - (t - scene.end) / FADE_T);
-}
 
 function updateLayers(t) {
-  SCENES.forEach((scene, i) => {
-    const op   = sceneOpacity(scene, t);
-    const isIn = op > 0.05;
-    scene.el.style.opacity       = op;
-    scene.el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
-    if (isIn && !layerIn[i])  { scene.el.classList.add('in');    layerIn[i] = true;  }
-    if (!isIn && layerIn[i])  { scene.el.classList.remove('in'); layerIn[i] = false; }
+  SCENES.forEach(scene => {
+    const visible = t >= scene.s && t <= scene.e;
+    scene.el.style.opacity       = visible ? '1' : '0';
+    scene.el.style.pointerEvents = visible ? 'auto' : 'none';
   });
   hint.style.opacity = t < 1.5 ? '1' : '0';
 }
 
 // ── Video scroll sync ─────────────────────────────────────────────────
 const totalScroll = () => document.body.scrollHeight - window.innerHeight;
+let lastUpdate = 0;
 
 function onScroll() {
+  const now = Date.now();
+  if (now - lastUpdate < 50) return;
+  lastUpdate = now;
+
   const progress = window.scrollY / totalScroll();
-  const t = progress * DURATION; // текущее время видео
+  const t = progress * DURATION;
 
   if (video.duration) {
     video.currentTime = t;
