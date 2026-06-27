@@ -13,7 +13,7 @@
   html { scroll-behavior: auto; }
 
   body {
-    height: 600vh;
+    height: 1200vh;
     background: #000;
     overflow-x: hidden;
   }
@@ -397,17 +397,17 @@ const video = document.getElementById('bg-video');
 const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
-const FADE = 2.2;
+const FADE = 1.1;
 const LAYERS = [
-  { el: document.getElementById('l1'), s: 0,  e: 8  },
-  { el: document.getElementById('l2'), s: 12, e: 22 },
-  { el: document.getElementById('l3'), s: 25, e: 35 },
-  { el: document.getElementById('l4'), s: 38, e: 48 },
-  { el: document.getElementById('l5'), s: 50, e: 60 },
-  { el: document.getElementById('l6'), s: 62, e: 72 },
-  { el: document.getElementById('l7'), s: 74, e: 84 },
-  { el: document.getElementById('l8'), s: 86, e: 94 },
-  { el: document.getElementById('l9'), s: 95, e: 100 }
+  { el: document.getElementById('l1'), s: 0,  e: 4  },
+  { el: document.getElementById('l2'), s: 6,  e: 11 },
+  { el: document.getElementById('l3'), s: 13, e: 18 },
+  { el: document.getElementById('l4'), s: 19, e: 24 },
+  { el: document.getElementById('l5'), s: 25, e: 30 },
+  { el: document.getElementById('l6'), s: 31, e: 36 },
+  { el: document.getElementById('l7'), s: 37, e: 42 },
+  { el: document.getElementById('l8'), s: 43, e: 47 },
+  { el: document.getElementById('l9'), s: 48, e: 50 }
 ];
 const layerIn = LAYERS.map(() => false);
 
