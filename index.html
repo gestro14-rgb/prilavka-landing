@@ -293,7 +293,7 @@
 
 <video id="bg-video"
   src="https://res.cloudinary.com/dbyku9vy0/video/upload/v1782582226/gpatks03ews9fcg0mvuh.mp4"
-  poster="https://res.cloudinary.com/dbyku9vy0/video/upload/so_0/v1782582226/gpatks03ews9fcg0mvuh.jpg"
+  poster="https://res.cloudinary.com/dbyku9vy0/video/upload/v1782582226/gpatks03ews9fcg0mvuh.jpg"
   preload="auto"
   muted
   playsinline>
@@ -417,6 +417,9 @@ const video = document.getElementById('bg-video');
 const preloader = document.getElementById('preloader');
 const hint = document.getElementById('scroll-hint');
 
+// iOS Safari: без явного load() декодер не инициализируется после смены src
+video.load();
+
 const DURATION = 64.3;
 // Слои в единицах прогресса (0..1), затем переводим в секунды × DURATION
 // l1: 0–0.04 | мёртвая зона 0.04–0.06 | l2–l8: по 0.10 с зазором 0.02 | l9: 0.90–1.0
@@ -466,33 +469,43 @@ window.addEventListener('scroll', onScroll, { passive: true });
 // ── Блокируем скролл до готовности видео ─────────────────────────────
 document.body.style.overflow = 'hidden';
 
+let loaderHidden = false;
 function hideLoader() {
-  // Ждём readyState >= 3 (HAVE_FUTURE_DATA) — достаточно данных для скраббинга
+  if (loaderHidden) return;
+  console.log('[Прилавка] hideLoader readyState:', video.readyState);
   if (video.readyState < 3) {
     setTimeout(hideLoader, 200);
     return;
   }
+  loaderHidden = true;
   document.body.style.overflow = '';
   preloader.classList.add('hidden');
   onScroll();
 }
 
 ['loadedmetadata', 'canplay', 'canplaythrough'].forEach(evt => {
-  video.addEventListener(evt, hideLoader, { once: true });
+  video.addEventListener(evt, () => {
+    console.log('[Прилавка] video event:', evt, '| readyState:', video.readyState);
+    hideLoader();
+  }, { once: true });
 });
 
-// Fallback — разблокировать через 8 сек в любом случае
+// Fallback — разблокировать через 3 сек в любом случае
 setTimeout(() => {
+  console.log('[Прилавка] fallback timeout | readyState:', video.readyState, '| loaderHidden:', loaderHidden);
+  if (loaderHidden) return;
+  loaderHidden = true;
   document.body.style.overflow = '';
   preloader.classList.add('hidden');
-}, 8000);
+}, 3000);
 
-// На iOS декодер не инициализируется без play() — делаем play+pause один раз
+// На iOS: play+pause чтобы прогреть декодер для скраббинга
 video.addEventListener('loadedmetadata', () => {
+  console.log('[Прилавка] loadedmetadata, duration:', video.duration);
   video.play().then(() => {
     video.pause();
     video.currentTime = 0;
-  }).catch(() => {});
+  }).catch((e) => console.log('[Прилавка] play() blocked:', e.message));
 }, { once: true });
 
 // Инициализировать слои сразу
