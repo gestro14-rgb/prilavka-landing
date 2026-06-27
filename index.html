@@ -289,6 +289,7 @@
 
 <video id="bg-video"
   src="https://res.cloudinary.com/dbyku9vy0/video/upload/v1782517355/tay3wrmwd7okrdef83wh.mp4"
+  poster="https://res.cloudinary.com/dbyku9vy0/video/upload/so_0/v1782517355/tay3wrmwd7okrdef83wh.jpg"
   preload="auto"
   muted
   playsinline
@@ -457,11 +458,21 @@ function onScroll() {
 
 window.addEventListener('scroll', onScroll, { passive: true });
 
+// ── Preloader: скрыть при первом же сработавшем событии ──────────────
+function hideLoader() {
+  preloader.classList.add('hidden');
+}
+
+['loadedmetadata', 'canplay', 'canplaythrough'].forEach(evt => {
+  video.addEventListener(evt, hideLoader, { once: true });
+});
+
+// Fallback — скрыть через 5 сек в любом случае
+setTimeout(hideLoader, 5000);
+
+// Синхронизировать позицию видео при готовности метаданных
 video.addEventListener('loadedmetadata', onScroll);
 video.addEventListener('canplay', onScroll);
-
-// ── Preloader ─────────────────────────────────────────────────────────
-video.addEventListener('canplay', () => preloader.classList.add('hidden'), { once: true });
 
 // Инициализировать слои сразу (видео грузится, слои уже видны)
 updateLayers(0);
