@@ -52,16 +52,7 @@
   }
 
   /* ── Video ── */
-  #video-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-  }
-
   #bg-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: block;
   }
 
@@ -470,8 +461,15 @@ function hideLoader() {
 // Fallback — скрыть через 5 сек в любом случае
 setTimeout(hideLoader, 5000);
 
-// Синхронизировать позицию видео при готовности метаданных
-video.addEventListener('loadedmetadata', onScroll);
+// На iOS декодер не инициализируется без play() — делаем play+pause один раз
+video.addEventListener('loadedmetadata', () => {
+  video.play().then(() => {
+    video.pause();
+    video.currentTime = 0;
+  }).catch(() => {});
+  onScroll();
+}, { once: true });
+
 video.addEventListener('canplay', onScroll);
 
 // Инициализировать слои сразу (видео грузится, слои уже видны)
