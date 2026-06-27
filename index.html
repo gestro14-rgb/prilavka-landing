@@ -400,17 +400,17 @@ const hint = document.getElementById('scroll-hint');
 const DURATION = 60.83;
 const FADE_T   = 0.5; // секунд на fade-in / fade-out
 
-// Сцены привязаны к времени видео
+// Сцены привязаны к времени видео (8 сцен × 7.6 сек)
 const SCENES = [
-  { el: document.getElementById('l1'), start: 0,    end: 3      }, // лого + кнопка
-  { el: document.getElementById('l2'), start: 0,    end: 8      }, // Тамбовская земля
-  { el: document.getElementById('l3'), start: 8,    end: 16     }, // Всё начинается здесь
-  { el: document.getElementById('l4'), start: 16,   end: 24     }, // Руки, которые знают дело
-  { el: document.getElementById('l5'), start: 24,   end: 32     }, // В путь до рассвета
-  { el: document.getElementById('l6'), start: 32,   end: 40     }, // Только лучшее
-  { el: document.getElementById('l7'), start: 40,   end: 48     }, // С заботой упаковано
-  { el: document.getElementById('l8'), start: 48,   end: 56     }, // Уже у твоей двери
-  { el: document.getElementById('l9'), start: 58,   end: DURATION } // финальный CTA
+  { el: document.getElementById('l1'), start: 0,    end: 4      }, // лого + кнопка
+  { el: document.getElementById('l2'), start: 0,    end: 7.6    }, // Тамбовская земля
+  { el: document.getElementById('l3'), start: 7.6,  end: 15.2   }, // Всё начинается здесь
+  { el: document.getElementById('l4'), start: 15.2, end: 22.8   }, // Руки, которые знают дело
+  { el: document.getElementById('l5'), start: 22.8, end: 30.4   }, // В путь до рассвета
+  { el: document.getElementById('l6'), start: 30.4, end: 38     }, // Только лучшее
+  { el: document.getElementById('l7'), start: 38,   end: 45.6   }, // С заботой упаковано
+  { el: document.getElementById('l8'), start: 45.6, end: 53.2   }, // Уже у твоей двери
+  { el: document.getElementById('l9'), start: 53.2, end: DURATION } // финальный CTA
 ];
 const layerIn = SCENES.map(() => false);
 
