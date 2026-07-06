@@ -179,28 +179,6 @@
   }
 
   /* ── Buttons ── */
-  .btn-ghost {
-    display: inline-block;
-    margin-top: 34px;
-    padding: 16px 42px;
-    border: 2px solid rgba(255,255,255,0.65);
-    border-radius: 50px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #fff;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 600;
-    font-size: clamp(15px, 1.6vw, 18px);
-    text-decoration: none;
-    letter-spacing: 0.2px;
-    transition: background 0.25s, transform 0.25s;
-  }
-  .btn-ghost:hover {
-    background: rgba(255,255,255,0.22);
-    transform: scale(1.04);
-  }
-
   .btn-cta {
     display: inline-block;
     margin-top: 36px;
@@ -233,6 +211,33 @@
     text-shadow: 0 1px 10px rgba(0,0,0,0.6);
     letter-spacing: 0.2px;
   }
+
+  /* ── Floating mini CTA ── */
+  #float-cta {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 25;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #2A7A2A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+  }
+  #float-cta.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  #float-cta:hover { background: #348a34; }
+  #float-cta svg { width: 26px; height: 26px; }
 
   /* ── Scroll hint ── */
   #scroll-hint {
@@ -322,8 +327,7 @@
       <span style="font-family:'Raleway',sans-serif;font-size:48px;font-weight:900;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">Прилавка</span>
     </div>
     <p class="sub-hero">Эко-продукты. С заботой.</p>
-    <a href="https://t.me/prilavka_eco_bot" class="btn-ghost" target="_blank" rel="noopener"
-       style="margin-top:34px;">Открыть в Telegram</a>
+    <a href="https://t.me/prilavka_eco_bot" class="btn-cta" target="_blank" rel="noopener">Открыть в Telegram</a>
   </div>
 </div>
 
@@ -363,7 +367,7 @@
 <div class="layer" id="l6">
   <div class="layer-inner">
     <h2 class="title-scene">Только лучшее.</h2>
-    <p class="scene-sub">Мы лично отбираем продукты на оптовой базе каждое утро.</p>
+    <p class="scene-sub">Мы лично отбираем продукты на оптовой базе каждое утро — и показываем, куда уходит каждый рубль.</p>
   </div>
 </div>
 
@@ -423,6 +427,15 @@
   <p>Нажмите для воспроизведения</p>
 </div>
 
+<!-- Floating mini CTA — на случай если кто-то потерял интерес к середине скролла -->
+<a id="float-cta" href="https://t.me/prilavka_eco_bot" target="_blank" rel="noopener" aria-label="Открыть в Telegram">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 4L2.5 11.3c-.8.3-.8 1.5 0 1.8l4.6 1.6 1.7 5.5c.2.7 1.1.9 1.6.3l2.5-2.7 4.8 3.6c.7.5 1.7.1 1.8-.7L22 4.9c.1-.7-.6-1.2-1-.9z"
+      fill="white"/>
+    <path d="M7.1 14.7l10.8-7.6c.4-.3.8.2.5.5l-8.6 8-0.3 3.4z" fill="#2A7A2A"/>
+  </svg>
+</a>
+
 <script>
 const video = document.getElementById('bg-video');
 const preloader = document.getElementById('preloader');
@@ -447,6 +460,9 @@ const SCENES = [
   { el: document.getElementById('l9'), s: 0.90 * P, e: P         },
 ];
 
+const floatCta = document.getElementById('float-cta');
+const FLOAT_CTA_THRESHOLD = SCENES[1].e; // после 2-й сцены (Layer 2)
+
 function updateLayers(t) {
   SCENES.forEach(scene => {
     const visible = t >= scene.s && t <= scene.e;
@@ -454,6 +470,7 @@ function updateLayers(t) {
     scene.el.style.pointerEvents = visible ? 'auto' : 'none';
   });
   hint.style.opacity = t < 1.5 ? '1' : '0';
+  floatCta.classList.toggle('visible', t >= FLOAT_CTA_THRESHOLD);
 }
 
 // ── Video scroll sync ─────────────────────────────────────────────────
