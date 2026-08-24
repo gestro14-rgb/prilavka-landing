@@ -538,6 +538,88 @@ video.addEventListener('loadedmetadata', () => {
 
 // Инициализировать слои сразу
 updateLayers(0);
+
+/* ── Аналитика: landing_viewed + проброс источника трафика в Telegram ──
+ *
+ * Лендинг — статика на GitHub Pages, отдельный origin от мини-аппа, поэтому
+ * событие уходит прямым запросом на бэкенд (CORS там открыт) и своей
+ * сессией: связать сессию лендинга с сессией мини-аппа по session_id нельзя
+ * в принципе — их связывает только UTM-метка, которую мы ниже и пробрасываем.
+ *
+ * Ограничение Telegram: payload у /start — максимум 64 символа из
+ * [A-Za-z0-9_-]. Поэтому utm_* не передаются как есть, а сжимаются в
+ * позиционный формат "u_<source>-<medium>-<campaign>", где дефис —
+ * разделитель, а значения зачищаются до букв и цифр. Разбирает его сервер
+ * (parseStartPayload в server.js) — здесь только сборка.
+ */
+(function () {
+  var API = 'https://prilavka-backend-production.up.railway.app';
+
+  function sessionId() {
+    try {
+      var k = 'prilavka_landing_session';
+      var v = sessionStorage.getItem(k);
+      if (!v) {
+        v = (crypto.randomUUID && crypto.randomUUID()) ||
+            String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) {
+      return String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+    }
+  }
+
+  var params;
+  try { params = new URLSearchParams(location.search); } catch (e) { params = null; }
+  var get = function (n) { return (params && params.get(n)) || ''; };
+
+  // Дефис и подчёркивание — служебные символы формата, поэтому вычищаются
+  // из значений вместе со всем остальным, что вне [A-Za-z0-9].
+  function clean(v) { return String(v || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 15); }
+
+  var source = clean(get('utm_source'));
+  var medium = clean(get('utm_medium'));
+  var campaign = clean(get('utm_campaign'));
+
+  // Payload собираем только если источник вообще известен: "u_--" не несёт
+  // информации, но выглядел бы в отчётах как размеченный переход.
+  var payload = source ? ('u_' + source + '-' + medium + '-' + campaign).slice(0, 64) : '';
+
+  // Событие просмотра — fire-and-forget, keepalive: посетитель может тут же
+  // уйти по CTA, и обычный запрос браузер бы отменил.
+  try {
+    fetch(API + '/api/analytics/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: sessionId(),
+        eventType: 'landing_viewed',
+        screenName: 'landing',
+        metadata: {
+          utmSource: source || null,
+          utmMedium: medium || null,
+          utmCampaign: campaign || null,
+          referrer: document.referrer || null
+        }
+      }),
+      keepalive: true
+    }).catch(function () {});
+  } catch (e) { /* аналитика не должна мешать лендингу работать */ }
+
+  // Дописываем ?start=<payload> ко всем CTA на бота. Только к ссылкам на
+  // t.me и только если своего start там ещё нет — чтобы не затирать
+  // возможные будущие размеченные вручную ссылки.
+  if (payload) {
+    var links = document.querySelectorAll('a[href*="t.me/"]');
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].getAttribute('href') || '';
+      if (href.indexOf('?') === -1) {
+        links[i].setAttribute('href', href + '?start=' + payload);
+      }
+    }
+  }
+})();
 </script>
 </body>
 </html>
